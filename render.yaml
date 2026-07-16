@@ -1,0 +1,32 @@
+services:
+  - type: redis
+    name: saar-ai-redis
+    ipAllowList: []
+    plan: free
+
+  - type: web
+    name: saar-ai-backend
+    env: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: bash start.sh
+    healthCheckPath: /health
+    disk:
+      name: saar-ai-storage
+      mountPath: /var/data/saar-ai
+      sizeGB: 1
+    envVars:
+      - key: REDIS_URL
+        fromService:
+          type: redis
+          name: saar-ai-redis
+          property: connectionString
+      - key: SAAR_STORAGE_DIR
+        value: /var/data/saar-ai
+      - key: CORS_ORIGINS
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
