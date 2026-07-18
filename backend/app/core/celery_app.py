@@ -5,7 +5,11 @@ load_dotenv()
 from celery import Celery
 
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    raise RuntimeError(
+        "REDIS_URL environment variable is required. Configure Upstash Redis before starting SAAR AI."
+    )
 
 celery_app = Celery(
     "saar_ai_worker",

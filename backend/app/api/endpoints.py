@@ -22,7 +22,11 @@ from app.core.report_builder import ReportBuilder
 logger = structlog.get_logger()
 router = APIRouter()
 
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    raise RuntimeError(
+        "REDIS_URL environment variable is required. Configure Upstash Redis before starting SAAR AI."
+    )
 
 # Simple in-memory fallback connection manager
 class ConnectionManager:
@@ -329,7 +333,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
     pubsub = None
     redis_client = None
     try:
-        redis_client = aioredis.from_url(REDIS_URL)
+        redis_client = aioredis.Redis.from_url(REDIS_URL, decode_responses=True)
         pubsub = redis_client.pubsub()
         await pubsub.subscribe(f"saar_channel_{client_id}")
         logger.info("ws_redis_subscribed", channel=f"saar_channel_{client_id}")

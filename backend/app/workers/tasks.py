@@ -18,14 +18,18 @@ from app.core.dataset_validator import ValidationErrorModel, ValidationCode, VAL
 from typing import Optional, Dict, Any
 
 logger = structlog.get_logger()
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    raise RuntimeError(
+        "REDIS_URL environment variable is required. Configure Upstash Redis before starting SAAR AI."
+    )
 
 def broadcast_update(client_id: str, step: str, status: str, message: str = "", type_: str = "timeline_update", results: Optional[dict] = None):
     """
     Publishes a status message to the Redis Pub/Sub channel for the client.
     """
     try:
-        r = redis.Redis.from_url(REDIS_URL)
+        r = redis.Redis.from_url(REDIS_URL, decode_responses=True)
         payload: Dict[str, Any] = {
             "type": type_,
             "step": step,
