@@ -1,15 +1,21 @@
 import os
+import ssl
 from dotenv import load_dotenv
 load_dotenv()
 
 from celery import Celery
-
 
 REDIS_URL = os.getenv("REDIS_URL")
 if not REDIS_URL:
     raise RuntimeError(
         "REDIS_URL environment variable is required. Configure Upstash Redis before starting SAAR AI."
     )
+
+ssl_options = None
+if REDIS_URL.startswith("rediss://"):
+    ssl_options = {
+        "ssl_cert_reqs": ssl.CERT_NONE
+    }
 
 celery_app = Celery(
     "saar_ai_worker",
@@ -26,3 +32,7 @@ celery_app.conf.update(
     enable_utc=True,
     task_track_started=True,
 )
+
+if ssl_options:
+    celery_app.conf.broker_use_ssl = ssl_options
+    celery_app.conf.redis_backend_use_ssl = ssl_options
