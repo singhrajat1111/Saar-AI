@@ -53,7 +53,7 @@ manager = ConnectionManager()
 async def upload_dataset(file: UploadFile = File(...), client_id: str = "demo_client"):
     """
     Receives the uploaded file, saves it, registers it in the DatasetStore,
-    and triggers the Celery processing task.
+    and processes the dataset synchronously.
     """
     filename = file.filename or "dataset.csv"
     logger.info("api_upload_start", filename=filename)
@@ -87,14 +87,14 @@ async def upload_dataset(file: UploadFile = File(...), client_id: str = "demo_cl
         raise HTTPException(status_code=500, detail="Failed to register dataset.")
     persisted_path = dataset["file_path"]
     
-    # Trigger Celery Task Pipeline
-    task = process_dataset_task.delay(persisted_path, client_id, dataset_id)
+    # Process dataset synchronously
+    result = process_dataset_task(persisted_path, client_id, dataset_id)
     
     return {
-        "status": "processing_started",
-        "task_id": task.id,
+        "status": "completed",
         "dataset_id": dataset_id,
-        "filename": filename
+        "filename": filename,
+        "result": result
     }
 
 @router.get("/datasets")

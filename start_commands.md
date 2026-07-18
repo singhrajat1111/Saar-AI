@@ -1,40 +1,47 @@
-redis- docker compose up -d
+# Commands to Run the SAAR AI Application
 
-backend- source venv/bin/activate
-uvicorn main:app --reload --port 8000
+## Overview
+This document provides the commands to run each part of the SAAR AI application:
+- Database (PostgreSQL with pgvector)
+- Redis (for WebSocket pub/sub)
+- Backend server (FastAPI/Uvicorn)
+- Frontend dev server (Next.js)
 
-frontend- npm run dev
+## Services
 
-celery worker-  source venv/bin/activate
-celery -A app.core.celery_app worker --loglevel=info
+### 1. Database (PostgreSQL)
+If using Docker/Podman:
+```bash
+docker run -d --name saarai-db -p 5432:5432 -e POSTGRES_USER=saar -e POSTGRES_PASSWORD=saar -e POSTGRES_DB=saar_db pgvector/pgvector:pg16
+```
 
-
-
-
-The Whole Process to Get Everything Running
-Once you select that image, here is the complete sequence of commands to get the entire application running:
-
-1. Start the Database (Podman)
-Ensure the database container is started by selecting docker.io/pgvector/pgvector:pg16. If it finishes, it will run in the background.
-
-2. Start Redis (Native Service)
-You already set this up, but ensure it is running:
-
-bash
+### 2. Redis (Native Service)
+```bash
+# On Linux with systemd
 sudo systemctl start redis
-3. Start the Backend Server (Terminal 1)
-From the /home/rajatsingh/Desktop/Saar-AI/backend directory:
 
-bash
+# Or manually
+redis-server
+```
+
+### 3. Backend Server
+From the `/home/rajatsingh/Desktop/Saar-AI/backend` directory:
+```bash
 source venv/bin/activate
+uvicorn main:app --host 0.0.0.0 --port 8000
+```
+For development with auto-reload:
+```bash
 uvicorn main:app --reload --port 8000
-4. Start the Celery Worker (Terminal 2)
-From the /home/rajatsingh/Desktop/Saar-AI/backend directory:
+```
 
-
-source venv/bin/activate
-celery -A app.core.celery_app worker --loglevel=info
-5. Start the Frontend Dev Server (Terminal 3)
-From the /home/rajatsingh/Desktop/Saar-AI/frontend directory:
-
+### 4. Frontend Dev Server
+From the `/home/rajatsingh/Desktop/Saar-AI/frontend` directory:
+```bash
 npm run dev
+```
+
+## Notes
+- Ensure the `.env` file is configured with the correct `REDIS_URL` and database connection string.
+- The application no longer uses Celery; all processing happens synchronously within the API request.
+- WebSocket updates are still powered by Redis pub/sub, so Redis must be running.

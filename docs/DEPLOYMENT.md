@@ -2,11 +2,11 @@
 
 This repo is set up for:
 
-- Backend API + Celery worker on Render
+- Backend API on Render
 - Redis on Render
 - Frontend on Vercel
 
-The first production deployment runs the backend API and Celery worker in the same Render web service so they share the same persistent disk for uploaded datasets.
+The backend runs as a single service (no separate worker) and uses Redis for WebSocket pub/sub.
 
 ## Backend on Render
 
@@ -73,4 +73,5 @@ Expected: validation fails gracefully with `EMPTY_FILE` and no HTTP 500.
 ## Notes
 
 - Do not commit runtime files from `storage/`.
-- For higher-scale production, move uploaded files from local disk to object storage such as S3, Cloudflare R2, or Supabase Storage, then run API and Celery as separate services.
+- For higher-scale deployment, you can run multiple instances of the API behind a load balancer; the application is stateless aside from uploads stored on the persistent disk (or object storage if configured).
+- If you move uploaded files to object storage (S3, Cloudflare R2, Supabase Storage), ensure the backend has appropriate credentials.

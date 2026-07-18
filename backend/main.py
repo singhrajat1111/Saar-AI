@@ -7,7 +7,6 @@ from fastapi import FastAPI
 
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.core.celery_app import celery_app
 
 
 def _cors_origins() -> list[str]:

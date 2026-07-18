@@ -3,7 +3,6 @@ import json
 import redis
 import pandas as pd
 import structlog
-from celery import shared_task
 
 from app.agents.validation_agent import ValidationAgent
 from app.agents.schema_agent import SchemaAgent
@@ -50,8 +49,7 @@ def broadcast_update(client_id: str, step: str, status: str, message: str = "", 
     except Exception as e:
         logger.error("broadcast_publish_failed", error=str(e))
 
-@shared_task(bind=True)
-def process_dataset_task(self, file_path: str, client_id: str, dataset_id: Optional[str] = None):
+def process_dataset_task(file_path: str, client_id: str, dataset_id: Optional[str] = None):
     """
     The Core Workflow Engine Pipeline.
     Chains the execution of all intelligent agents sequentially.
