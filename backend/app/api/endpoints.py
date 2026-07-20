@@ -4,12 +4,12 @@ import structlog
 import asyncio
 import json
 from typing import Dict, List, Any
-from fastapi import APIRouter, UploadFile, File, BackgroundTasks, WebSocket, WebSocketDisconnect, HTTPException, Response
+from fastapi import APIRouter, UploadFile, File, WebSocket, WebSocketDisconnect, HTTPException, Response
 from fastapi.responses import FileResponse
 import pandas as pd
 import redis.asyncio as aioredis
 
-from app.workers.tasks import process_dataset_task
+from app.workers.pipeline import process_dataset
 from app.core.dataset_store import DatasetStore
 from app.agents.cleaning_agent import CleaningAgent
 from app.agents.schema_agent import SchemaAgent
@@ -88,7 +88,7 @@ async def upload_dataset(file: UploadFile = File(...), client_id: str = "demo_cl
     persisted_path = dataset["file_path"]
     
     # Process dataset synchronously
-    result = process_dataset_task(persisted_path, client_id, dataset_id)
+    result = process_dataset(persisted_path, client_id, dataset_id)
     
     return {
         "status": "completed",
@@ -349,7 +349,7 @@ async def websocket_endpoint(websocket: WebSocket, client_id: str):
             while True:
                 message = await pubsub.get_message(ignore_subscribe_messages=True, timeout=1.0)
                 if message and message["type"] == "message":
-                    data = message["data"].decode("utf-8")
+                    data = message["data"] if isinstance(message["data"], str) else message["data"].decode("utf-8")
                     await websocket.send_text(data)
                     logger.debug("ws_sent_from_redis", client_id=client_id, data=data)
                 await asyncio.sleep(0.01)

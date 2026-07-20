@@ -3,21 +3,28 @@
 import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { UploadCloud, FileType } from "lucide-react";
-import { useDatasetStore } from "@/store/use-dataset-store";
+import { useDatasetStore, ValidationError } from "@/store/use-dataset-store";
 import { cn } from "@/lib/utils";
 import { apiUrl } from "@/lib/api";
 import axios from "axios";
 
 export function UploadZone() {
-  const { setUploading, setUploadProgress, setDatasetId, reset } = useDatasetStore();
+  const {
+    setUploading,
+    setUploadProgress,
+    setDatasetId,
+    setPendingResult,
+    setValidationError,
+    reset,
+  } = useDatasetStore();
   const [error, setError] = useState<string | null>(null);
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
-    
+
     const file = acceptedFiles[0];
     const extension = file.name.split('.').pop()?.toLowerCase();
-    
+
     if (extension !== "csv" && extension !== "xlsx" && extension !== "xls") {
       setError("Supported file formats are CSV, XLSX, and XLS.");
       return;
@@ -38,19 +45,63 @@ export function UploadZone() {
           setUploadProgress(percentCompleted);
         },
       });
-      
-      // The backend has accepted the file and started processing
+
+      // Backend is fully synchronous now (no Celery). The POST response
+      // already contains the final analysis result — including any failure
+      // payload. We must read both paths here:
+      //   1. Success:   { status:"completed", dataset_id, filename, result: { status:"success",   results:{...} } }
+      //   2. Failure:   { status:"completed", dataset_id, filename, result: { status:"failed",    step, error_object:{...} } }
       setUploadProgress(100);
-      if (response.data && response.data.dataset_id) {
-        setDatasetId(response.data.dataset_id);
+
+      const data = response.data || {};
+      if (data.dataset_id) {
+        setDatasetId(data.dataset_id);
       }
-      
+
+      const inner = data.result || {};
+      const innerResults = inner.results;
+      const innerError = inner.error_object;
+
+      if (inner.status === "failed" || innerError) {
+        // Validation (or any other step) failed. Surface the structured
+        // error in the store so LiveTimeline can render the error card and
+        // stop the spinner. We deliberately do NOT set `pendingResult` and
+        // we keep `isUploading=true` so the timeline stays mounted.
+        const validationError: ValidationError = {
+          validation_code: innerError?.code || inner.error_code,
+          validation_message: innerError?.message || inner.error || "Dataset validation failed.",
+          validation_error: innerError || inner,
+          code: innerError?.code,
+          message: innerError?.message || inner.error || "Dataset validation failed.",
+          recovery: innerError?.recovery,
+          severity: innerError?.severity,
+          recoverable: innerError?.recoverable,
+          version: innerError?.version,
+          failed_step: inner.step || "validation",
+          raw: innerError || inner,
+        };
+        setValidationError(validationError);
+      } else if (innerResults) {
+        // Success path: hydrate the result payload with the metadata the
+        // dashboard pages expect to read off of `datasetResults`
+        // (filename, rows_count, etc.).
+        const hydrated: Record<string, any> = {
+          ...innerResults,
+          filename: data.filename ?? file.name,
+        };
+        setPendingResult(hydrated);
+      }
+
+      // Keep `isUploading` true — LiveTimeline is now mounted and will
+      // either run the local stage animation (success) or render the
+      // error card (failure). It will clear the flag when finished.
+
     } catch (err) {
       console.error(err);
       setError("Failed to upload file. Ensure backend is running.");
       setUploading(false);
     }
-  }, [reset, setUploadProgress, setUploading, setDatasetId]);
+  }, [reset, setUploadProgress, setUploading, setDatasetId, setPendingResult, setValidationError]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ 
     onDrop,

@@ -49,7 +49,7 @@ def broadcast_update(client_id: str, step: str, status: str, message: str = "", 
     except Exception as e:
         logger.error("broadcast_publish_failed", error=str(e))
 
-def process_dataset_task(file_path: str, client_id: str, dataset_id: Optional[str] = None):
+def process_dataset(file_path: str, client_id: str, dataset_id: Optional[str] = None):
     """
     The Core Workflow Engine Pipeline.
     Chains the execution of all intelligent agents sequentially.
@@ -141,7 +141,9 @@ def process_dataset_task(file_path: str, client_id: str, dataset_id: Optional[st
         broadcast_update(client_id, "EDA & Statistics", "completed")
         
         # 3.5. Data Cleaning Detection
+        broadcast_update(client_id, "Cleaning", "processing")
         cleaning_rec = CleaningAgent().detect_issues(schema.get("schema", []), eda)
+        broadcast_update(client_id, "Cleaning", "completed")
         
         # 4. ML Recommendation
         broadcast_update(client_id, "ML Recommendation", "processing")

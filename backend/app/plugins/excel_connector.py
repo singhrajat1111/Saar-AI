@@ -22,24 +22,26 @@ class ExcelConnector(BaseDataConnector):
 
     def get_metadata(self, source: str, **kwargs) -> Dict[str, Any]:
         if not self.validate_source(source):
-            from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+            from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
             return {
                 "is_valid": False,
                 "error_object": ValidationErrorModel(
                     code=ValidationCode.UNSUPPORTED_FILE,
-                    message="Unsupported file format. Please upload an Excel file (.xlsx, .xls)."
+                    message="Unsupported file format. Please upload an Excel file (.xlsx, .xls).",
+                    recovery=DatasetValidator.get_recovery_guidance(ValidationCode.UNSUPPORTED_FILE),
                 ).model_dump()
             }
         
         try:
             file_size_bytes = os.path.getsize(source)
             if file_size_bytes == 0:
-                from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+                from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
                 return {
                     "is_valid": False,
                     "error_object": ValidationErrorModel(
                         code=ValidationCode.EMPTY_FILE,
-                        message="The uploaded file is empty (0 bytes)."
+                        message="The uploaded file is empty (0 bytes).",
+                        recovery=DatasetValidator.get_recovery_guidance(ValidationCode.EMPTY_FILE),
                     ).model_dump()
                 }
 
@@ -74,11 +76,12 @@ class ExcelConnector(BaseDataConnector):
                 "warnings": [w.model_dump() for w in warnings]
             }
         except Exception as e:
-            from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+            from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
             return {
                 "is_valid": False,
                 "error_object": ValidationErrorModel(
                     code=ValidationCode.CORRUPTED_FILE,
-                    message=f"Corrupted Excel structure: {str(e)}"
+                    message=f"Corrupted Excel structure: {str(e)}",
+                    recovery=DatasetValidator.get_recovery_guidance(ValidationCode.CORRUPTED_FILE),
                 ).model_dump()
             }

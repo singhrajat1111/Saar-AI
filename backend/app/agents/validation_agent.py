@@ -45,7 +45,7 @@ class ValidationAgent:
     def execute(self) -> Dict[str, Any]:
         logger.info("validation_agent_start", file_path=self.file_path, file_type=self.file_type)
         
-        from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+        from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
 
         if self.connector is None:
             error_obj = ValidationErrorModel(
@@ -54,6 +54,7 @@ class ValidationAgent:
                     "Unsupported file format. Please upload a CSV (.csv) or Excel "
                     "(.xlsx, .xls) file."
                 ),
+                recovery=DatasetValidator.get_recovery_guidance(ValidationCode.UNSUPPORTED_FILE),
             ).model_dump()
             return {"status": "failed", "error_object": error_obj}
 
@@ -61,7 +62,8 @@ class ValidationAgent:
             error_obj = ValidationErrorModel(
                 code=ValidationCode.CORRUPTED_FILE,
                 message=f"File path does not exist: {self.file_path}",
-                recoverable=False
+                recoverable=False,
+                recovery=DatasetValidator.get_recovery_guidance(ValidationCode.CORRUPTED_FILE),
             ).model_dump()
             return {"status": "failed", "error_object": error_obj}
             
@@ -69,7 +71,8 @@ class ValidationAgent:
         if file_size == 0:
             error_obj = ValidationErrorModel(
                 code=ValidationCode.EMPTY_FILE,
-                message="The uploaded file is empty (0 bytes)."
+                message="The uploaded file is empty (0 bytes).",
+                recovery=DatasetValidator.get_recovery_guidance(ValidationCode.EMPTY_FILE),
             ).model_dump()
             return {"status": "failed", "error_object": error_obj}
             
@@ -78,7 +81,8 @@ class ValidationAgent:
             error_obj = ValidationErrorModel(
                 code=ValidationCode.CORRUPTED_FILE,
                 message="File size exceeds the 50MB limit for local analysis.",
-                recoverable=True
+                recoverable=True,
+                recovery=DatasetValidator.get_recovery_guidance(ValidationCode.CORRUPTED_FILE),
             ).model_dump()
             return {"status": "failed", "error_object": error_obj}
 
@@ -97,7 +101,8 @@ class ValidationAgent:
                     reason = metadata.get("error", "Invalid dataset format or corrupted file structure.") if metadata else "Unknown error."
                     error_obj = ValidationErrorModel(
                         code=ValidationCode.CORRUPTED_FILE,
-                        message=reason
+                        message=reason,
+                        recovery=DatasetValidator.get_recovery_guidance(ValidationCode.CORRUPTED_FILE),
                     ).model_dump()
                 logger.error("validation_agent_fail", error_code=error_obj.get("code"), message=error_obj.get("message"))
                 return {"status": "failed", "error_object": error_obj}
@@ -113,6 +118,7 @@ class ValidationAgent:
             logger.error("validation_agent_error", error=str(e))
             error_obj = ValidationErrorModel(
                 code=ValidationCode.CORRUPTED_FILE,
-                message=f"Corrupted or invalid file structure: {str(e)}"
+                message=f"Corrupted or invalid file structure: {str(e)}",
+                recovery=DatasetValidator.get_recovery_guidance(ValidationCode.CORRUPTED_FILE),
             ).model_dump()
             return {"status": "failed", "error_object": error_obj}

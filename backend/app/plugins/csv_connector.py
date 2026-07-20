@@ -18,24 +18,26 @@ class CSVConnector(BaseDataConnector):
 
     def get_metadata(self, source: str, **kwargs) -> Dict[str, Any]:
         if not self.validate_source(source):
-            from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+            from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
             return {
                 "is_valid": False,
                 "error_object": ValidationErrorModel(
                     code=ValidationCode.UNSUPPORTED_FILE,
-                    message="Unsupported file format. Please upload a CSV file."
+                    message="Unsupported file format. Please upload a CSV file.",
+                    recovery=DatasetValidator.get_recovery_guidance(ValidationCode.UNSUPPORTED_FILE),
                 ).model_dump()
             }
         
         try:
             file_size_bytes = os.path.getsize(source)
             if file_size_bytes == 0:
-                from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+                from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
                 return {
                     "is_valid": False,
                     "error_object": ValidationErrorModel(
                         code=ValidationCode.EMPTY_FILE,
-                        message="The uploaded file is empty (0 bytes)."
+                        message="The uploaded file is empty (0 bytes).",
+                        recovery=DatasetValidator.get_recovery_guidance(ValidationCode.EMPTY_FILE),
                     ).model_dump()
                 }
             
@@ -64,20 +66,35 @@ class CSVConnector(BaseDataConnector):
                 "warnings": [w.model_dump() for w in warnings]
             }
         except pd.errors.EmptyDataError:
-            from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+            from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
             return {
                 "is_valid": False,
                 "error_object": ValidationErrorModel(
                     code=ValidationCode.EMPTY_DATASET,
-                    message="The uploaded dataset contains no data."
+                    message="The uploaded dataset contains no data.",
+                    recovery=DatasetValidator.get_recovery_guidance(ValidationCode.EMPTY_DATASET),
+                ).model_dump()
+            }
+        except UnicodeDecodeError:
+            from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
+            return {
+                "is_valid": False,
+                "error_object": ValidationErrorModel(
+                    code=ValidationCode.INVALID_ENCODING,
+                    message=(
+                        "The file could not be read with the detected encoding. "
+                        "Please save the file with UTF-8 encoding and re-upload."
+                    ),
+                    recovery=DatasetValidator.get_recovery_guidance(ValidationCode.INVALID_ENCODING),
                 ).model_dump()
             }
         except Exception as e:
-            from app.core.dataset_validator import ValidationErrorModel, ValidationCode
+            from app.core.dataset_validator import ValidationErrorModel, ValidationCode, DatasetValidator
             return {
                 "is_valid": False,
                 "error_object": ValidationErrorModel(
                     code=ValidationCode.CORRUPTED_FILE,
-                    message=f"Corrupted CSV structure: {str(e)}"
+                    message=f"Corrupted CSV structure: {str(e)}",
+                    recovery=DatasetValidator.get_recovery_guidance(ValidationCode.CORRUPTED_FILE),
                 ).model_dump()
             }
