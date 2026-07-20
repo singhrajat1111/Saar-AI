@@ -1,143 +1,282 @@
-# Saar AI
+# 🚀 SAAR AI v1.0
+### Discover the Essence of Your Data
 
-> Discover the essence of your data.
+SAAR AI is an AI-powered data analyst that automatically validates, cleans, analyzes, and explains datasets in a single workflow.
 
-Saar AI is an intelligent analytics platform where users can upload datasets, clean and explore data, generate visualizations, build ML models, and interact with an AI assistant — all from a single, clean interface.
-
-**"Saar"** (सार) means *the essence* of something.
-
----
-
-## Goals
-
-- Make data analytics accessible through a clean, modern interface
-- Provide AI-powered insights without requiring coding knowledge
-- Support the full data lifecycle: upload → clean → explore → visualize → model → report
-- Deliver a premium, distraction-free experience
+Upload a CSV or Excel file, and SAAR generates a complete executive analytics dashboard with intelligent insights, machine learning recommendations, and downloadable reports.
 
 ---
 
-## Tech Stack
+## ✨ Features
+
+### 📂 Dataset Upload
+- CSV & Excel support
+- Automatic dataset registration
+- Real-time processing pipeline
+
+### ✅ Intelligent Validation
+Detects:
+- Missing values
+- Duplicate rows
+- Duplicate column names
+- Empty datasets
+- Invalid encoding
+- Schema issues
+- Data quality problems
+
+Every validation error includes a human-readable explanation and recovery guidance.
+
+---
+
+### 🧹 Automated Data Cleaning
+
+SAAR automatically performs cleaning where appropriate.
+
+Examples:
+- Missing value handling
+- Duplicate removal
+- Type normalization
+- Dataset preparation for analysis
+
+The cleaned dataset can be exported after processing.
+
+---
+
+### 📊 Data Quality Assessment
+
+Every uploaded dataset receives a quality score.
+
+Example:
+
+Initial Score:
+86/100
+
+↓
+
+After automated cleaning:
+
+96/100
+
+The dashboard also shows improvements applied during cleaning.
+
+---
+
+### 📈 Automated EDA
+
+Generates:
+
+- Executive Summary
+- Dataset Statistics
+- Correlation Analysis
+- Feature Overview
+- Distribution Analysis
+- Missing Value Analysis
+- Outlier Detection
+
+---
+
+### 🤖 Machine Learning Recommendations
+
+Automatically identifies:
+
+- Recommended ML task
+- Suggested algorithms
+- Target variable
+- Feature information
+- Modeling recommendations
+
+---
+
+### 🧠 AI Explanation Layer
+
+SAAR converts statistical outputs into business-friendly explanations.
+
+Three explanation levels:
+
+- Beginner
+- Intermediate
+- Expert
+
+---
+
+### 📑 Executive Reports
+
+Generate reports in multiple formats.
+
+- HTML
+- PDF
+- Markdown
+- JSON
+
+---
+
+### ⚡ Real-Time Processing
+
+Live processing timeline:
+
+✔ Validation
+
+✔ Schema Detection
+
+✔ EDA & Statistics
+
+✔ Data Cleaning
+
+✔ ML Recommendation
+
+✔ AI Insight Generation
+
+✔ Feature Store Sync
+
+✔ Report Generation
+
+---
+
+## 🛠 Tech Stack
 
 ### Frontend
-- **Next.js** — App Router, TypeScript
-- **Tailwind CSS v4** — Utility-first styling
-- **shadcn/ui** — UI component primitives
-- **Lucide Icons** — Icon system
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
 
-### Backend (Phase 2+)
-- **FastAPI** — Python web framework
-- **Pandas / NumPy** — Data processing
-- **Scikit-learn** — Machine learning
+### Backend
+- FastAPI
+- Python
+- Pandas
+- NumPy
+- Scikit-Learn
+- OpenPyXL
 
-### AI (Phase 6+)
-- **Ollama** — Local LLM
-- **Gemini** — Cloud LLM (optional)
+### AI
+- Google Gemini
+- Rule Engine
+- Structured Prompting
+
+### Infrastructure
+- Redis
+- WebSockets
+- Vercel
+- Render
 
 ---
 
-## Folder Structure
+## 📁 Project Structure
 
 ```
-src/
-├── app/              # Next.js pages and layouts
-├── components/
-│   ├── layout/       # App shell, navbar, sidebar
-│   ├── ui/           # shadcn/ui primitives
-│   └── common/       # Shared components
-├── features/         # Feature modules (datasets, ML, etc.)
-├── hooks/            # Custom React hooks
-├── services/         # API clients
-├── lib/              # Utilities
-├── constants/        # Configuration
-├── types/            # TypeScript definitions
-└── styles/           # Additional styles
+frontend/
+backend/
+storage/
+docs/
 
-docs/                 # Project documentation
 ```
 
 ---
 
-## Project Roadmap
+## 🚀 Local Setup
 
-| Phase | Name | Status |
-|---|---|---|
-| 1 | Project Foundation | ✅ Complete |
-| 2 | Dataset Management | ⬜ Planned |
-| 3 | Data Cleaning | ⬜ Planned |
-| 4 | Data Visualization | ⬜ Planned |
-| 5 | Machine Learning | ⬜ Planned |
-| 6 | AI Assistant | ⬜ Planned |
-| 7 | Reports | ⬜ Planned |
-| 8 | Deployment | ⬜ Planned |
-
-See [docs/ROADMAP.md](docs/ROADMAP.md) for detailed phase descriptions.
-
----
-
-## Local Setup
-
-### Prerequisites
-
-- Node.js 22+ (install via [nvm](https://github.com/nvm-sh/nvm))
-
-### Installation
+### Backend
 
 ```bash
-# Clone the repository
-git clone https://github.com/your-username/saar-ai.git
-cd saar-ai
+cd backend
 
-# Install dependencies
+python -m venv venv
+
+source venv/bin/activate
+
+pip install -r requirements.txt
+
+uvicorn main:app --reload
+```
+
+---
+
+### Frontend
+
+```bash
+cd frontend
+
 npm install
 
-# Start development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
 
-### Available Scripts
+## 🌐 Deployment
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start development server |
-| `npm run build` | Create production build |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
+Frontend:
+- Vercel
+
+Backend:
+- Render
 
 ---
 
-## Development Workflow
+## 🎯 Why SAAR?
 
-1. Read the [Contributing Guide](docs/CONTRIBUTING.md)
-2. Check the [Roadmap](docs/ROADMAP.md) for current phase
-3. Create a feature branch: `feat/your-feature`
-4. Make changes following [Architecture](docs/ARCHITECTURE.md) conventions
-5. Ensure `npm run build` and `npm run lint` pass
-6. Submit a pull request
+Traditional BI dashboards only visualize data.
 
----
+SAAR goes beyond visualization by:
 
-## Documentation
+- Validating datasets
+- Automatically cleaning data
+- Measuring data quality
+- Detecting schema issues
+- Performing EDA
+- Recommending ML approaches
+- Generating AI-powered executive summaries
+- Producing downloadable reports
 
-| Document | Description |
-|---|---|
-| [ROADMAP.md](docs/ROADMAP.md) | Development phases and progress |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture and design decisions |
-| [DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) | Visual design specifications |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Render and Vercel deployment instructions |
-| [CONTRIBUTING.md](docs/CONTRIBUTING.md) | Coding and contribution guidelines |
-| [CHANGELOG.md](docs/CHANGELOG.md) | Version history |
+The goal is to automate the repetitive work of a data analyst while keeping results transparent and explainable.
 
 ---
 
-## Screenshots
+## 📌 Current Version
 
-*Screenshots will be added after each phase is complete.*
+**SAAR AI v1.0**
+
+### Stable Features
+
+- Dataset Validation
+- Automatic Cleaning
+- Quality Scoring
+- Executive Dashboard
+- AI Insights
+- ML Recommendations
+- Report Generation
+- Real-time Processing Timeline
+- Clean Dataset Export
 
 ---
 
-## License
+## 🔮 Future Roadmap
 
-*License to be determined.*
+### v2
+
+- SQL Database Connector
+- Multiple Dataset Analysis
+- Natural Language Queries
+- Interactive AI Chat
+- Custom Dashboard Builder
+
+### v3
+
+- Predictive Analytics
+- Time Series Forecasting
+- AutoML
+- Enterprise Integrations
+
+---
+
+## 👨‍💻 Author
+
+**Rajat Singh**
+
+Computer Science Student • AI Engineer
+
+Building practical AI products focused on intelligent automation and explainable analytics.
+
+---
+
+⭐ If you found this project interesting, consider giving it a star.
