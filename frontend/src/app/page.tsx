@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDatasetStore } from "@/store/use-dataset-store";
 import { UploadZone } from "@/features/datasets/components/upload-zone";
 import { LiveTimeline } from "@/features/dashboard/components/live-timeline";
@@ -10,11 +10,21 @@ import Link from "next/link";
 import { AIExplainModal } from "@/components/ui/ai-explain-modal";
 
 export default function DashboardPage() {
-  const { isUploading, datasetResults, reset, datasetId } = useDatasetStore();
+  const { isUploading, datasetResults, pendingResult, reset, datasetId } = useDatasetStore();
+  const setDatasetResults = useDatasetStore((s) => s.setDatasetResults);
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<any>("executive_summary");
   const [modalTitle, setModalTitle] = useState("");
   const [modalPayload, setModalPayload] = useState<any>(null);
+
+  // Safety net: if the POST response set pendingResult but the
+  // LiveTimeline unmounted before transferring it to datasetResults,
+  // pick it up here so the dashboard still renders.
+  useEffect(() => {
+    if (pendingResult && !datasetResults) {
+      setDatasetResults(pendingResult);
+    }
+  }, [pendingResult, datasetResults, setDatasetResults]);
 
 
   if (datasetResults) {

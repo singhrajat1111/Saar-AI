@@ -125,8 +125,24 @@ export function LiveTimeline() {
 
       if (cancelled || replayCancelledRef.current) return;
 
-      if (pendingResult) {
-        setDatasetResults(pendingResult);
+      // The animation may finish before the synchronous backend POST
+      // returns. Poll the store for the pendingResult (set by upload-zone
+      // when the POST resolves) or for datasetResults (set by the
+      // WebSocket "workflow_complete" handler). Use getState() to avoid
+      // the stale-closure problem — the pendingResult captured at mount
+      // time is always null.
+      let result = useDatasetStore.getState().pendingResult;
+      let waited = 0;
+      while (!result && !useDatasetStore.getState().datasetResults && waited < 15000) {
+        await new Promise((r) => setTimeout(r, 200));
+        result = useDatasetStore.getState().pendingResult;
+        waited += 200;
+      }
+
+      if (cancelled || replayCancelledRef.current) return;
+
+      if (result) {
+        setDatasetResults(result);
       }
       setUploading(false);
     })();
